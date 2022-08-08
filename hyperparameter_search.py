@@ -120,7 +120,7 @@ def main():
             "num_train_epochs": trial.suggest_int("num_train_epochs", 1, 5),
             "per_device_train_batch_size": trial.suggest_categorical("per_device_train_batch_size", [16, 24, 32]),
             "weight_decay": trial.suggest_categorical("weight_decay", [0.0, 0.01, 0.009, 0.02]),
-            "adam_epsilon": trial.suggest_categorical("adam_epsilon", [1e-6, 1e-7, 1e-8]),
+            "warmup_ratio": trial.suggest_categorical("warmup_ratio", [0.0, 0.1, 0.05]),
         }
 
     def optuna_objective(metrics):
