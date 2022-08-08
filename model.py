@@ -61,7 +61,7 @@ class AutoModelForTokenSequenceClassification(PreTrainedModel):
         token_type_ids=None,
         **kwargs
     ):
-
+        
         sequence_output = self.transformer(
             input_ids=input_ids,
             attention_mask=attention_mask,
