@@ -85,6 +85,12 @@ class AutoModelForTokenSequenceClassification(PreTrainedModel):
                     logits.view(-1, self.config.num_labels), labels.view(-1)
                 )
 
+        if self.config.return_dict:
+            return {
+                "loss": loss,
+                "logits": logits
+            }
+        
         return SequenceClassificationOutput(
             loss=loss,
             logits=logits,
