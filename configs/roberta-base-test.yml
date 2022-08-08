@@ -22,6 +22,7 @@ group: none
 tags:
   - roberta-base
   - test
+  - token-label
 notes: >
  
 job_type: train
