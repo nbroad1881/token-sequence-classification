@@ -12,7 +12,7 @@ layer_norm_eps: 1e-7
 problem_type: "multi_label_classification"
 dataset_name: "go_emotions"
 dataset_config: 
-approach: "token"
+approach: "regular"
 
 
 # WandB Config
@@ -22,7 +22,7 @@ group: none
 tags:
   - roberta-base
   - test
-  - token-label
+  - regular
 notes: >
  
 job_type: train
