@@ -45,17 +45,19 @@ class DataModule:
                 print(x["text"])
                 print([self.int2label[i] for i in x["labels"]])
 
-            def tokenize(examples):
+            def add_tokens_tokenize(examples):
                 texts = ["".join(self.label_tokens + [t]) for t in examples["text"]]
                 tokenized = self.tokenizer(
-                    texts, 
-                    padding=False, 
+                    texts,
+                    padding=False,
                     truncation=True,
                     max_length=self.cfg["max_seq_length"],
                 )
 
                 num_examples = len(examples["labels"])
-                onehot_labels = np.zeros((num_examples, self.num_labels), dtype=np.float32)
+                onehot_labels = np.zeros(
+                    (num_examples, self.num_labels), dtype=np.float32
+                )
 
                 for row_num, labels in enumerate(examples["labels"]):
                     onehot_labels[row_num, labels] = 1
@@ -64,12 +66,34 @@ class DataModule:
 
                 return tokenized
 
-            self.tokenized_dataset = self.raw_dataset.map(
-                tokenize, batched=True, num_proc=self.cfg["num_proc"]
-            )
-            
-            
-            
+            def regular_tokenize(examples):
+                tokenized = self.tokenizer(
+                    examples["text"],
+                    padding=False,
+                    truncation=True,
+                    max_length=self.cfg["max_seq_length"],
+                )
+
+                num_examples = len(examples["labels"])
+                onehot_labels = np.zeros(
+                    (num_examples, self.num_labels), dtype=np.float32
+                )
+
+                for row_num, labels in enumerate(examples["labels"]):
+                    onehot_labels[row_num, labels] = 1
+
+                tokenized["labels"] = onehot_labels
+
+                return tokenized
+
+            if self.cfg["approach"] == "regular":
+                self.tokenized_dataset = self.raw_dataset.map(
+                    regular_tokenize, batched=True, num_proc=self.cfg["num_proc"]
+                )
+            else:
+                self.tokenized_dataset = self.raw_dataset.map(
+                    add_tokens_tokenize, batched=True, num_proc=self.cfg["num_proc"]
+                )
 
 
 @dataclass

@@ -11,13 +11,11 @@ from transformers import (
     AutoConfig,
     AutoModelForSequenceClassification,
     DataCollatorWithPadding,
-    EvalPrediction,
     Trainer,
     TrainingArguments,
     set_seed,
 )
 from transformers.integrations import WandbCallback
-from transformers.trainer_utils import get_last_checkpoint
 
 from data import DataModule, DataCollatorFloatLabels
 from model import AutoModelForTokenSequenceClassification
@@ -34,6 +32,7 @@ def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("config_file", type=str)
     parser.add_argument("-l", "--load_from_disk", type=str, default=None)
+    parser.add_argument("--reg", required=False, action="store_true")
 
     return parser
 
@@ -44,12 +43,13 @@ def main():
     
 
     cfg, train_args = get_configs(args.config_file)
-    set_wandb_env_vars(cfg)
+    
 
     training_args = TrainingArguments(**train_args)
     cfg["load_from_disk"] = args.load_from_disk
+    cfg["approach"] = "regular" if args.reg else "token"
     
-    
+    set_wandb_env_vars(cfg)
 
     # Setup logging
     logging.basicConfig(
@@ -81,7 +81,12 @@ def main():
         problem_type=cfg["problem_type"],
     )
 
-    model = AutoModelForTokenSequenceClassification.from_pretrained(
+    if cfg["approach"] == "regular":
+        model_class = AutoModelForSequenceClassification
+    else:
+        model_class = AutoModelForTokenSequenceClassification
+    
+    model = model_class.from_pretrained(
         cfg["model_name_or_path"],
         config=config,
     )
