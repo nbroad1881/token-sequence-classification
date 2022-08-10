@@ -47,7 +47,8 @@ def main():
 
     training_args = TrainingArguments(**train_args)
     cfg["load_from_disk"] = args.load_from_disk
-    cfg["approach"] = "regular" if args.reg else "token"
+    if args.reg:
+        cfg["approach"] = "regular"
     
     set_wandb_env_vars(cfg)
 
@@ -91,7 +92,8 @@ def main():
         config=config,
     )
     
-    model.transformer.resize_token_embeddings(len(data_module.tokenizer))
+    if cfg["approach"] != "regular":
+        model.transformer.resize_token_embeddings(len(data_module.tokenizer))
 
     if cfg["problem_type"] == "multi_label_classification":
         data_collator = DataCollatorFloatLabels(data_module.tokenizer, pad_to_multiple_of=cfg["pad_multiple"])
