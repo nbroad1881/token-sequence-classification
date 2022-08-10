@@ -84,16 +84,22 @@ class AutoModelForTokenSequenceClassification(PreTrainedModel):
                 loss = nn.CrossEntropyLoss()(
                     logits.view(-1, self.config.num_labels), labels.view(-1)
                 )
+        if self.config.problem_type == "multi_label_classification":
+            probas = logits.sigmoid()    
+        else:
+            probas = logits.softmax(dim=-1)
 
         if self.config.return_dict:
             return {
                 "loss": loss,
-                "logits": logits
+                "logits": logits,
+                "probas": probas,
             }
         
         return SequenceClassificationOutput(
             loss=loss,
             logits=logits,
+            probas=probas,
         )
 
     def set_embeddings(self, method="avg", tokenizer=None):
@@ -105,6 +111,8 @@ class AutoModelForTokenSequenceClassification(PreTrainedModel):
         embedding will be the same as `new_value` as shown below
         label_ids = tokenizer("neutral", add_special_tokens=False).input_ids
         new_value = self.model.transformer.word_embeddings.weight[label_ids].mean()
+
+        TODO: set to value of CLS, average with CLS
         """
 
         num_old_embeddings = self.model.transformer.word_embeddings.weight.data.size(0) - self.config.num_labels
@@ -133,3 +141,5 @@ class SequenceClassificationOutput(ModelOutput):
 
     loss: torch.FloatTensor = None
     logits: torch.FloatTensor = None
+    probas: torch.FloatTensor = None
+    
